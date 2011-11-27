@@ -1,6 +1,6 @@
 Name:           maven-ear-plugin
 Version:        2.4.2
-Release:        3
+Release:        5
 Summary:        Maven EAR Plugin
 
 Group:          Development/Java
