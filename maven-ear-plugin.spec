@@ -1,46 +1,43 @@
+%{?_javapackages_macros:%_javapackages_macros}
 Name:           maven-ear-plugin
-Version:        2.4.2
-Release:        5
+Version:        2.8
+Release:        5.0%{?dist}
 Summary:        Maven EAR Plugin
 
-Group:          Development/Java
+
 License:        ASL 2.0
 URL:            http://maven.apache.org/plugins/maven-ear-plugin/
-#svn export http://svn.apache.org/repos/asf/maven/plugins/tags/maven-ear-plugin-2.4.2/
-#tar jcf maven-ear-plugin-2.4.2.tar.bz2 maven-ear-plugin-2.4.2/
-Source0:        %{name}-%{version}.tar.bz2
-BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
+Source0:        http://repo2.maven.org/maven2/org/apache/maven/plugins/%{name}/%{version}/%{name}-%{version}-source-release.zip
 
 BuildArch: noarch
 
-BuildRequires: java-devel >= 0:1.6.0
+BuildRequires: java-devel >= 1:1.6.0
 BuildRequires: jpackage-utils
-BuildRequires: maven2
-BuildRequires: maven-plugin-plugin
+BuildRequires: junit
+BuildRequires: maven-local
+BuildRequires: maven-archiver
 BuildRequires: maven-compiler-plugin
 BuildRequires: maven-install-plugin
 BuildRequires: maven-jar-plugin
 BuildRequires: maven-javadoc-plugin
+BuildRequires: maven-plugin-annotations
+BuildRequires: maven-plugin-plugin
 BuildRequires: maven-resources-plugin
-BuildRequires: maven-surefire-maven-plugin
-BuildRequires: maven-archiver
-BuildRequires: plexus-archiver
-BuildRequires: plexus-container-default
-BuildRequires: plexus-utils
 BuildRequires: maven-shared-filtering
 BuildRequires: maven-shared-verifier
+BuildRequires: maven-surefire-plugin
+BuildRequires: plexus-archiver
+BuildRequires: plexus-containers-container-default
+BuildRequires: plexus-utils
 BuildRequires: xmlunit
-BuildRequires: junit
 
-Requires:       maven2
+Requires:       maven
 Requires:       java
 Requires:       jpackage-utils
+Requires:       maven-plugin-annotations
 Requires:       plexus-archiver
-Requires:       plexus-container-default
+Requires:       plexus-containers-container-default
 Requires:       plexus-utils
-
-Requires(post):       jpackage-utils
-Requires(postun):     jpackage-utils
 
 Obsoletes: maven2-plugin-ear <= 0:2.0.8
 Provides: maven2-plugin-ear = 0:%{version}-%{release}
@@ -49,7 +46,7 @@ Provides: maven2-plugin-ear = 0:%{version}-%{release}
 Generates a J2EE Enterprise Archive (EAR) file.
 
 %package javadoc
-Group:          Development/Java
+
 Summary:        Javadoc for %{name}
 Requires:       jpackage-utils
 
@@ -60,52 +57,81 @@ API documentation for %{name}.
 %prep
 %setup -q 
 
+# Was missing
+%pom_add_dep org.codehaus.plexus:plexus-container-default:1.0
+
 %build
-export MAVEN_REPO_LOCAL=$(pwd)/.m2/repository
-mvn-jpp \
-        -e \
-        -Dmaven2.jpp.mode=true \
-        -Dmaven.repo.local=$MAVEN_REPO_LOCAL \
+mvn-rpmbuild \
         -Dmaven.test.skip=true \
-        install javadoc:javadoc
+        install javadoc:aggregate
 
 %install
-rm -rf %{buildroot}
-
 # jars
-install -Dpm 644 target/%{name}-%{version}.jar   %{buildroot}%{_javadir}/%{name}-%{version}.jar
-
-(cd %{buildroot}%{_javadir} && for jar in *-%{version}*; \
-    do ln -sf ${jar} `echo $jar| sed "s|-%{version}||g"`; done)
-
-%add_to_maven_depmap org.apache.maven.plugins %{name} %{version} JPP %{name}
+install -Dpm 644 target/%{name}-%{version}.jar   %{buildroot}%{_javadir}/%{name}.jar
 
 # poms
 install -Dpm 644 pom.xml %{buildroot}%{_mavenpomdir}/JPP-%{name}.pom
+%add_maven_depmap JPP-%{name}.pom %{name}.jar
 
 # javadoc
-install -d -m 0755 %{buildroot}%{_javadocdir}/%{name}-%{version}
-cp -pr target/site/api*/* %{buildroot}%{_javadocdir}/%{name}-%{version}/
-ln -s %{name}-%{version} %{buildroot}%{_javadocdir}/%{name}
-rm -rf target/site/api*
-
-%post
-%update_maven_depmap
-
-%postun
-%update_maven_depmap
-
-%clean
-rm -rf %{buildroot}
+install -d -m 0755 %{buildroot}%{_javadocdir}/%{name}
+cp -pr target/site/api*/* %{buildroot}%{_javadocdir}/%{name}/
 
 %files
-%defattr(-,root,root,-)
-%{_javadir}/*
+%doc LICENSE NOTICE
+%{_javadir}/%{name}.jar
 %{_mavenpomdir}/*
 %{_mavendepmapfragdir}/*
 
 %files javadoc
-%defattr(-,root,root,-)
-%{_javadocdir}/%{name}-%{version}
+%doc LICENSE NOTICE
 %{_javadocdir}/%{name}
 
+%changelog
+* Sat Aug 03 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.8-5
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_20_Mass_Rebuild
+
+* Thu Feb 14 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.8-4
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_19_Mass_Rebuild
+
+* Wed Feb 06 2013 Java SIG <java-devel@lists.fedoraproject.org> - 2.8-3
+- Update for https://fedoraproject.org/wiki/Fedora_19_Maven_Rebuild
+- Replace maven BuildRequires with maven-local
+
+* Thu Dec 13 2012 Tomas Radej <tradej@redhat.com> - 2.8-2
+- Forgot to add sources
+- Fixed changelog
+
+* Thu Dec 13 2012 Tomas Radej <tradej@redhat.com> - 2.8-1
+- Updated to latest upstream
+
+* Tue Nov 27 2012 Mikolaj Izdebski <mizdebsk@redhat.com> - 2.7-3
+- Don't use legacy plexus-container-default, resolves: rhbz#878557
+- Install license files, resolves: rhbz#880268
+
+
+* Thu Jul 19 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.7-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
+
+* Thu Jan 19 2012 Tomas Radej <tradej@redhat.com> - 2.7-1
+- Updated to latest upstream
+
+* Fri Jan 13 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.6-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
+
+* Mon Sep 05 2011 Tomas Radej <tradej@redhat.com> - 2.6-1
+- Update to 2.6
+- Guideline fixes
+
+* Wed May 18 2011 Alexander Kurtakov <akurtako@redhat.com> 2.5-1
+- Update to upstream 2.5 version.
+- Adapt to current guidelines.
+
+* Tue Feb 08 2011 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.4.2-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_15_Mass_Rebuild
+
+* Mon Jun 07 2010 Hui Wang <huwang@redhat.com> - 2.4.2-2
+- Added missing requires
+
+* Mon May 31 2010 Hui Wang <huwang@redhat.com> - 2.4.2-1
+- Initial version of the package
