@@ -1,9 +1,9 @@
 %{?_javapackages_macros:%_javapackages_macros}
 Name:           maven-ear-plugin
 Version:        2.8
-Release:        5.0%{?dist}
+Release:        7.1
 Summary:        Maven EAR Plugin
-
+Group:		Development/Java
 
 License:        ASL 2.0
 URL:            http://maven.apache.org/plugins/maven-ear-plugin/
@@ -61,27 +61,13 @@ API documentation for %{name}.
 %pom_add_dep org.codehaus.plexus:plexus-container-default:1.0
 
 %build
-mvn-rpmbuild \
-        -Dmaven.test.skip=true \
-        install javadoc:aggregate
+%mvn_build -f
 
 %install
-# jars
-install -Dpm 644 target/%{name}-%{version}.jar   %{buildroot}%{_javadir}/%{name}.jar
+%mvn_install
 
-# poms
-install -Dpm 644 pom.xml %{buildroot}%{_mavenpomdir}/JPP-%{name}.pom
-%add_maven_depmap JPP-%{name}.pom %{name}.jar
-
-# javadoc
-install -d -m 0755 %{buildroot}%{_javadocdir}/%{name}
-cp -pr target/site/api*/* %{buildroot}%{_javadocdir}/%{name}/
-
-%files
+%files -f .mfiles
 %doc LICENSE NOTICE
-%{_javadir}/%{name}.jar
-%{_mavenpomdir}/*
-%{_mavendepmapfragdir}/*
 
 %files javadoc
 %doc LICENSE NOTICE
