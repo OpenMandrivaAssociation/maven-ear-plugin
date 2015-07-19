@@ -1,7 +1,7 @@
 %{?_javapackages_macros:%_javapackages_macros}
 Name:           maven-ear-plugin
 Version:        2.8
-Release:        7.1
+Release:        7.2
 Summary:        Maven EAR Plugin
 Group:		Development/Java
 
