@@ -6,7 +6,7 @@ Summary:        Maven EAR Plugin
 Group:		Development/Java
 
 License:        ASL 2.0
-URL:            http://maven.apache.org/plugins/maven-ear-plugin/
+URL:            https://maven.apache.org/plugins/maven-ear-plugin/
 Source0:        http://repo2.maven.org/maven2/org/apache/maven/plugins/%{name}/%{version}/%{name}-%{version}-source-release.zip
 
 BuildArch: noarch
